@@ -1,7 +1,8 @@
 //db_helper全局 不用再次导入
 exports.signIn = (req, res,next) => {
     console.log("signin");
-    db_helper.signIn(req.body.account, req.body.pass, function (status, name, img_path) {
+    var user_id = parseInt(req.body.account);
+    db_helper.signIn(user_id, req.body.pass, function (status, name) {
         //status:: 0: verified ; 1:not exists ; 2:verification error
         if (status === 0) {
             res.json({
@@ -22,5 +23,14 @@ exports.signIn = (req, res,next) => {
             });
             return;
         }
+    });
+}
+exports.signUp = (req, res,next) => {
+    console.log("signUp");
+    db_helper.signUp(req.body.name, req.body.pass, function (user_id) {
+        res.json({
+            user_id: user_id
+        });
+        return;
     });
 }

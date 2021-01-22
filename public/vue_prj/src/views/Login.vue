@@ -20,7 +20,7 @@
 
 <script>
 const PasswordReg = /^\w{8,12}$/;
-
+const IdReg = /^\w{6,6}$/;
 export default {
   name: "Login",
   data() {
@@ -31,13 +31,23 @@ export default {
         callback();
       }
     };
+    var IdMainRule = (rule, value, callback) => {
+      if (!IdReg.test(value)) {
+        callback(new Error("账号必须6位！"));
+      } else {
+        callback();
+      }
+    };
     return {
       message: {
         account: "",
         pwd: ""
       },
       LoginFormRules: {
-        account: [{ required: true, message: "账号必填！", trigger: "blur" }],
+        account: [
+          { required: true, message: "帐号必填！", trigger: "blur" },
+          { validator: IdMainRule, trigger: "blur" }
+        ],
         pwd: [
           { required: true, message: "密码必填！", trigger: "blur" },
           { validator: PasswordMainRule, trigger: "blur" }
@@ -87,7 +97,7 @@ export default {
         });
     },
     signup() {
-      this.$router.push({ path: "/Signup" });
+      this.$router.push({ path: "/signup" });
     }
   }
 };
@@ -114,7 +124,7 @@ body {
   padding-bottom: 10px;
 }
 
-img + span {
+.logo_part {
   padding-left: 8px;
 }
 

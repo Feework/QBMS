@@ -18,11 +18,10 @@ function DB_helper() {
     //初始化建表语句
     this.createTables=function () {
             var sql="CREATE TABLE IF NOT EXISTS `user`(\n" +
-                "   `user_id` VARCHAR(20) NOT NULL,\n" +
+                "   `user_id` INT AUTO_INCREMENT PRIMARY KEY,\n" +
                 "   `user_name` VARCHAR(20) NOT NULL,\n" +
                 "   `password` VARCHAR(12) NOT NULL,\n" +
-                "   `role` int DEFAULT 0, \n" +
-                "   PRIMARY KEY ( `user_id` )\n" +
+                "   `role` int DEFAULT 0\n" +
                 ");";
             connection.query(sql,function (err) {
                 if(err){
@@ -30,6 +29,7 @@ function DB_helper() {
                     return;
                 }
             });
+
     }
     this.signIn = function (user_id, password, cb) {
             var sql = 'SELECT * FROM user where user_id = ?';
@@ -55,7 +55,30 @@ function DB_helper() {
                 console.log(name);
                 if (cb != null) return cb(status, name);
             });
-     };
+    };
+    this.signUp = function (name,password, cb) {
+            var sql = 'INSERT INTO user ' +
+                '(password, user_name) ' +
+                'values(?, ?);';
+            var SqlParams = [password, name];
+            connection.query(sql, SqlParams, function (err, result) {
+                if (err) {
+                    console.log('[INSERT ERROR] - ', err.message);
+                    return;
+                }
+                var sql1 = 'SELECT * FROM user ORDER BY user_id DESC LIMIT 1';
+                connection.query(sql1,function (err, result) {
+                    console.log(result);
+                    if (err) {
+                        console.log(err.message);
+                        return;
+                    }
+                    if (cb != null) return cb(result[0].user_id);
+                });
+
+            });
+
+    };
 }
 
 module.exports = DB_helper;
