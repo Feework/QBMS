@@ -1,4 +1,5 @@
 //db_helper全局 不用再次导入
+var formidable = require('formidable');
 exports.signIn = (req, res,next) => {
     console.log("signin");
     var user_id = parseInt(req.body.account);
@@ -33,4 +34,20 @@ exports.signUp = (req, res,next) => {
         });
         return;
     });
+}
+exports.upLoad = (req, res,next) => {
+    console.log("upLoad");
+    var form = new formidable.IncomingForm();
+    form.encoding = 'utf-8';
+    form.uploadDir = './public/files';
+    form.keepExtensions = true
+    form.parse(req, function(err, fields, files){
+        console.log('received fields:');
+        console.log(fields);   // { name: '张三丰', email: 'dianziyouxiang@163.com' }
+        console.log('received files:');
+        console.log(files);   // 上传的图片对象
+        res.json({
+            status: 0
+        });
+    })
 }

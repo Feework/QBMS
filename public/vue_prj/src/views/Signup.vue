@@ -130,28 +130,6 @@ body {
 }
 
 
-.upload_icon {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  color: #4e519e;
-  font-size: 1.5em;
-  opacity: 0;
-}
-
-#profile {
-  height: 80px;
-  width: 80px;
-  border-radius: 50%;
-  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2);
-}
-
-#profile:hover {
-  opacity: 0.4;
-  cursor: pointer;
-}
-
 #profile:hover + .upload_icon {
   opacity: 1;
 }
@@ -168,13 +146,4 @@ body {
   border: #4e519e !important;
 }
 
-#close-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
-#close-btn:hover {
-  cursor: pointer;
-}
 </style>
