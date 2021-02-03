@@ -1,8 +1,8 @@
 <template>
   <div class="add-file-right" style="height:70px;margin-left:100px;margin-top:15px;">
-    <el-form>
+    <el-form enctype="multipart/form-data">
       <el-button type="primary" @click="propagate" class="choice_style">选择文件</el-button>
-      <input type="file" ref="refFile" style="display: none" id="upload" @change="fileLoad($event)" multiple="multiplt" accept=".docx,.doc,.pdf,.txt">
+      <input type="file" ref="refFile" style="display: none" id="upload" @change="fileLoad($event)" accept=".docx,.doc,.pdf,.txt">
       <el-input placeholder="文件" class="file_name_style" readonly="readonly" id="file_path" ></el-input>
       <el-button type="primary" @click="upload()" class="upload_style">导入</el-button>
     </el-form>

@@ -29,6 +29,29 @@ function DB_helper() {
                     return;
                 }
             });
+            sql="CREATE TABLE IF NOT EXISTS `choices`(\n" +
+                "   `answer_id` INT AUTO_INCREMENT PRIMARY KEY,\n" +
+                "   `content` VARCHAR(60) NOT NULL\n" +
+                ");";
+            connection.query(sql,function (err) {
+                if(err){
+                    console.log("[CREATE TABLE ERROR - ]",err.message);
+                    return;
+                }
+            });
+            sql="CREATE TABLE IF NOT EXISTS `multiple_choice`(\n" +
+                "   `question_id` INT AUTO_INCREMENT PRIMARY KEY,\n" +
+                "   `course_id` INT DEFAULT 0,\n" +
+                "   `content` VARCHAR(200) NOT NULL,\n" +
+                "   `right_answer` INT NOT NULL,\n" +
+                "    foreign key(right_answer) references choices(answer_id))\n"
+                ");";
+            connection.query(sql,function (err) {
+                if(err){
+                    console.log("[CREATE TABLE ERROR - ]",err.message);
+                    return;
+                }
+            });
 
     }
     this.signIn = function (user_id, password, cb) {
