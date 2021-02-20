@@ -12,7 +12,9 @@
     "express": "~4.16.1",
     "formidable": "^1.2.2",
     "http-errors": "~1.6.3",
+    "mammoth": "^1.4.16",
     "morgan": "~1.9.1",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "textract": "^2.5.0"
   }
 }

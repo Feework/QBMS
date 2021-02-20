@@ -1,5 +1,6 @@
-var formidable = require('formidable');
+const formidable = require('formidable');
 const fs = require("fs");
+const exec = require('child_process').exec;
 exports.upLoad = (req, res,next) => {
     console.log("upLoad");
     var form = new formidable.IncomingForm();
@@ -10,16 +11,24 @@ exports.upLoad = (req, res,next) => {
         if(err) throw err;
         console.log(fields);
         var oldFilename = files.fileUpload.name;
-        a = files.fileUpload.path
-        b = form.uploadDir + generateFilename(oldFilename)
-        fs.rename(files.fileUpload.path, form.uploadDir + generateFilename(oldFilename),err=>{
+        var newFilename = form.uploadDir + generateFilename(oldFilename)
+        fs.rename(files.fileUpload.path, newFilename,err=>{
             if(err) {
                 console.log("重命名失败");
                 console.log(err);
             }else{
                 console.log("重命名成功!");
+                var cmdStr = 'python ./services/py/extract.py '+newFilename;
+                exec(cmdStr,function (err,stdout,stderr) {
+                    if(err) {
+                        console.log('error: ' + stderr);
+                    } else {
+                        console.log(stdout);
+                    }
+                })
             }
         })
+
         res.json({
             status: 0
         });
