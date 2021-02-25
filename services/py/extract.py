@@ -10,7 +10,8 @@ sql_init1 = """CREATE TABLE IF NOT EXISTS multiple_choice (
                 question_id INT AUTO_INCREMENT PRIMARY KEY,
                 course_id INT DEFAULT 0,
                 content VARCHAR(400) NOT NULL,
-                right_answer VARCHAR(30) DEFAULT 'NULL'
+                right_answer VARCHAR(30) DEFAULT 'NULL',
+                resolve VARCHAR(500) DEFAULT 'NULL'
                 )"""
 sql_init2 = """CREATE TABLE IF NOT EXISTS choices(
                 answer_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -19,8 +20,8 @@ sql_init2 = """CREATE TABLE IF NOT EXISTS choices(
                 foreign key(question_id) references multiple_choice(question_id)
                 )"""
 
-sql_insert_mul = """INSERT INTO multiple_choice(content)
-                SELECT %s FROM DUAL WHERE NOT EXISTS(SELECT content FROM multiple_choice WHERE content = %s)
+sql_insert_mul = """INSERT INTO multiple_choice(content,resolve)
+                SELECT %s,%s FROM DUAL WHERE NOT EXISTS(SELECT content FROM multiple_choice WHERE content = %s)
                 """
 sql_insert_choices = """INSERT INTO choices(content,question_id)
                 VALUES (%s,%s)"""
@@ -49,10 +50,13 @@ for tb in tbs:
             if content[0] in numbers:
                 titles = []
                 ans = ""
+                resolve = ""
                 lines = content.splitlines()
                 for element in lines:
                     if "正确答案" in element:
                         ans = element
+                    if "答案解析" in element:
+                        resolve = element.replace('【答案解析】：', '', 1)
                 name = lines[0].split('、', 1)[1].rstrip('。').replace("（　）", "").strip()
                 titles.append(lines[0].split('、', 1)[1].rstrip('。').replace("（　）", "").strip())
                 choices = []
@@ -83,7 +87,7 @@ for tb in tbs:
                 # choices中为错误答案，right中为正确答案
                 if titles not in titles_list:
                     titles_list.append(titles)
-                    insert = cur.execute(sql_insert_mul, (titles,titles))
+                    insert = cur.execute(sql_insert_mul, (titles, resolve, titles))
                     if insert == 0:
                         break
                     index = cur.lastrowid
