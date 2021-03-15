@@ -1,5 +1,5 @@
+#原始题库数据导入数据库
 from docx import Document
-from openpyxl import Workbook
 import pymysql
 import sys
 
@@ -8,7 +8,7 @@ cur = conn.cursor()
 # 获取游标
 sql_init1 = """CREATE TABLE IF NOT EXISTS multiple_choice (
                 question_id INT AUTO_INCREMENT PRIMARY KEY,
-                course_id INT DEFAULT 0,
+                course_id INT NOT NULL,
                 content VARCHAR(400) NOT NULL,
                 right_answer VARCHAR(30) DEFAULT 'NULL',
                 resolve VARCHAR(500) DEFAULT 'NULL'
@@ -20,15 +20,17 @@ sql_init2 = """CREATE TABLE IF NOT EXISTS choices(
                 foreign key(question_id) references multiple_choice(question_id)
                 )"""
 
-sql_insert_mul = """INSERT INTO multiple_choice(content,resolve)
-                SELECT %s,%s FROM DUAL WHERE NOT EXISTS(SELECT content FROM multiple_choice WHERE content = %s)
+sql_insert_mul = """INSERT INTO multiple_choice(content,resolve,course_id)
+                SELECT %s,%s,%s FROM DUAL WHERE NOT EXISTS(SELECT content FROM multiple_choice WHERE content = %s)
                 """
 sql_insert_choices = """INSERT INTO choices(content,question_id)
                 VALUES (%s,%s)"""
 sql_update_mul = """UPDATE multiple_choice SET right_answer = %s WHERE question_id = %s"""
+sql_get_course = """SELECT course_id FROM Course WHERE course_name = %s"""
 # 从 word 中提取文件内容
 # 提取题目以及对应正确答案
 filename = sys.argv[1]
+course = sys.argv[2]
 file = Document(filename)
 
 number_of_titles = 0
@@ -42,6 +44,9 @@ ans = ""
 cur.execute(sql_init1)
 cur.execute(sql_init2)
 
+#获取课程id
+cur.execute(sql_get_course, course)
+course_id = cur.fetchone()
 tbs = file.tables
 for tb in tbs:
     for row in tb.rows:
@@ -87,7 +92,7 @@ for tb in tbs:
                 # choices中为错误答案，right中为正确答案
                 if titles not in titles_list:
                     titles_list.append(titles)
-                    insert = cur.execute(sql_insert_mul, (titles, resolve, titles))
+                    insert = cur.execute(sql_insert_mul, (titles, resolve, course_id, titles))
                     if insert == 0:
                         break
                     index = cur.lastrowid

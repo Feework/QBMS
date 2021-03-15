@@ -76,7 +76,22 @@ function DB_helper() {
                 });
 
             });
-
+    };
+    this.getCourses = function (cb) {
+        var sql = 'SELECT course_name FROM course';
+        connection.query(sql,function (err, result) {
+            if (err) {
+                console.log(err.message);
+                return;
+            }
+            res_list = []
+            for (var i=0;i<result.length;i++)
+            {
+                res_list.push(result[i].course_name)
+            }
+            console.log(res_list);
+            if (cb != null) return cb(res_list);
+      });
     };
 }
 

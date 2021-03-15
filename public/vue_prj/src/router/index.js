@@ -4,6 +4,7 @@ import HelloWorld from '@/components/HelloWorld'
 import Login from '@/views/Login'
 import Signup from "@/views/Signup";
 import Upload from "@/views/Upload"
+import Mainpage from "@/views/Mainpage";
 /*路径和显示的界面 import.vue界面，下方设定访问界面的路径*/
 Vue.use(Router)
 
@@ -28,6 +29,11 @@ export default new Router({
       path: '/upload',
       name: '上传题目',
       component: Upload
+    },
+    {
+      path: '/mainpage',
+      name: '主页',
+      component: Mainpage
     }
   ]
 })

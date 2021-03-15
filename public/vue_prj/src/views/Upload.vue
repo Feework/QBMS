@@ -1,6 +1,10 @@
 <template>
-  <div class="add-file-right" style="height:70px;margin-left:100px;margin-top:15px;">
+  <div class="add-file-right">
     <el-form enctype="multipart/form-data">
+      <span>课程：</span>
+      <el-select id="courses" style="width: 120px" v-model="model1" @change="$forceUpdate()">
+        <el-option v-for="item in courses_list" :value="item" :key="item">{{ item }}</el-option>
+      </el-select>
       <el-button type="primary" @click="propagate" class="choice_style">选择文件</el-button>
       <input type="file" ref="refFile" style="display: none" id="upload" @change="fileLoad($event)" accept=".docx,.doc,.pdf,.txt">
       <el-input placeholder="文件" class="file_name_style" readonly="readonly" id="file_path" ></el-input>
@@ -10,8 +14,28 @@
 </template>
 
 <script>
+
 export default {
   name: "upload",
+  data () {
+    return {
+      courses_list: [
+        "aaa","bbb"
+      ],
+      model1: ''
+    }
+  },
+  created() {
+    this.axios
+      .post(
+        "/manager/upload_init"
+      )
+      .then(response => {
+        let res_list = response.data.res_list;
+        this.courses_list = res_list
+        console.log(this.courses_list)
+      });
+  },
   methods: {
     propagate: function () {
       document.getElementById("upload").click();
@@ -30,10 +54,20 @@ export default {
         });
         return;
       }
+      if('' == this.model1){
+        this.$message({
+          type: 'info',
+          message: '请选择对应课程'
+        });
+        return;
+      }
       var files = this.$refs.refFile.files[0];
       var formData = new FormData();
+      var course = this.model1;
       formData.append('filename',files.name);
       formData.append('fileUpload',files);
+      formData.append('course',course);
+      console.log(course)
       this.axios
         .post("manager/upload", formData, {
           headers: {
@@ -56,7 +90,7 @@ export default {
             });
           }
         });
-    }
+    },
   }
 }
 </script>
@@ -68,6 +102,12 @@ html {
 
 body {
   background-color: #f7f7f7;
+}
+
+.add-file-right {
+  height: 70px;
+  margin: 0 auto;
+  width:500px;
 }
 
 .file_name_style {
@@ -92,5 +132,6 @@ body {
 
 .el-button + .el-button {
   margin-left: 0px !important;
+  margin-top: 20px;
 }
 </style>

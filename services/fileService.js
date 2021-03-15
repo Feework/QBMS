@@ -18,7 +18,7 @@ exports.upLoad = (req, res,next) => {
                 console.log(err);
             }else{
                 console.log("重命名成功!");
-                var cmdStr = 'python ./services/py/extract.py '+newFilename;
+                var cmdStr = 'python ./services/py/extract.py '+newFilename+' '+ fields.course;
                 exec(cmdStr,function (err,stdout,stderr) {
                     if(err) {
                         console.log('error: ' + stderr);
@@ -39,4 +39,25 @@ function generateFilename(oldFilename){
     let d = new Date();
     let names = oldFilename.split(".");
     return `${ names[0]}_${ ""+d.getFullYear() + (d.getMonth()+1) + d.getDate() +'_'+ d.getHours() + d.getMinutes() + d.getSeconds()}.${ names[1]}`;
+}
+
+exports.course_init = (req, res,next) => {
+    console.log("course_init");
+    var cmdStr = 'python ./services/py/import_courses.py ';
+    exec(cmdStr,function (err,stdout,stderr) {
+        if(err) {
+            console.log('error: ' + stderr);
+        } else {
+            console.log(stdout);
+            // 初始化courses表
+            db_helper.getCourses(function (res_list) {
+                console.log("course_init");
+                res.json({
+                    res_list: res_list,
+                });
+                return;
+            });
+        }
+    })
+
 }
