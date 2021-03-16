@@ -19,11 +19,28 @@ exports.upLoad = (req, res,next) => {
             }else{
                 console.log("重命名成功!");
                 var cmdStr = 'python ./services/py/extract.py '+newFilename+' '+ fields.course;
+                var cmdStr1 = 'python ./services/py/split.py '
+                var cmdStr2 = 'python ./services/py/word2vec_kmeans.py '
                 exec(cmdStr,function (err,stdout,stderr) {
                     if(err) {
                         console.log('error: ' + stderr);
                     } else {
                         console.log(stdout);
+                        exec(cmdStr1,function (err,stdout,stderr) {
+                            if(err) {
+                                console.log('error: ' + stderr);
+                            } else {
+                                console.log(stdout);
+                                exec(cmdStr2,function (err,stdout,stderr) {
+                                    if(err) {
+                                        console.log('error: ' + stderr);
+                                    } else {
+                                        console.log(stdout);
+
+                                    }
+                                })
+                            }
+                        })
                     }
                 })
             }
