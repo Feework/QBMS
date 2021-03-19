@@ -5,6 +5,8 @@ import Login from '@/views/Login'
 import Signup from "@/views/Signup";
 import Upload from "@/views/Upload"
 import Mainpage from "@/views/Mainpage";
+import Paper from "../views/Paper";
+import Paperdisplay from "../views/Paperdisplay";
 /*路径和显示的界面 import.vue界面，下方设定访问界面的路径*/
 Vue.use(Router)
 
@@ -34,6 +36,16 @@ export default new Router({
       path: '/mainpage',
       name: '主页',
       component: Mainpage
+    },
+    {
+      path: '/paper',
+      name: '试卷部分',
+      component: Paper
+    },
+    {
+      path: '/paperdisplay',
+      name: '试卷展示',
+      component: Paperdisplay
     }
   ]
 })

@@ -76,7 +76,7 @@ export default {
         .then(response => {
           let res = response.data;
           if (res.status === "0") {
-            /*window.location.href = "chat.html";校验成功*/
+            this.$router.push({ path: "/Mainpage" });
           } else {
             if (res.status === "1") {
               this.$message({

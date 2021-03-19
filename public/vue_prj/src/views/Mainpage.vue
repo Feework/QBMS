@@ -2,7 +2,7 @@
   <div class="button_list">
     <el-form enctype="multipart/form-data">
       <el-button type="primary" @click="skip_upload()" class="skip_style">题目导入</el-button>
-      <el-button type="primary" @click="skip_paper()" class="skip_style">试卷生成</el-button>
+      <el-button type="primary" @click="skip_paper()" class="skip_style">试卷</el-button>
     </el-form>
   </div>
 </template>
