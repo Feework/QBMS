@@ -173,7 +173,21 @@ export default {
     }
   },
   created() {
-    Object.assign(this.tempDataSource, this.dataSource)
+    this.dataSource.course = this.$route.query.course;
+    this.dataSource.counts = this.$route.query.counts;
+    this.axios
+      .post(
+        "/paper/create",
+        this.qs.stringify({
+          course: this.dataSource.course,
+          counts: this.dataSource.counts
+        })
+      )
+      .then(response => {
+        console.log(response.data)
+        //
+      });
+    //
     this.convertData()
     if(this.type===2)
     {

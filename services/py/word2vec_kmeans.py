@@ -98,7 +98,7 @@ def output(result, outputDir, clusters, title):
     while (os.path.exists(outputDir + outputFile + type)):
         count += 1
         outputFile = title + 'out' + str(count)
-    doc = open(outputDir + outputFile + type, 'w')
+    doc = open(outputDir + outputFile + type, 'w',encoding='utf-8')
     for i in range(0, clusters):
         print(result[i], file=doc)
     doc.close()

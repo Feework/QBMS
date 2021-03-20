@@ -2,13 +2,13 @@
   <div>
     <div class="left">
       <h2>自动组卷</h2>
-      <span>题数</span>
+      <span>题数：</span>
       <el-select id="counts" style="width: 120px" v-model="countsSelect" @change="$forceUpdate()">
         <el-option :value="20"></el-option>
         <el-option :value="25"></el-option>
         <el-option :value="50"></el-option>
       </el-select><br>
-      <span>课程</span>
+      <span>课程：</span>
       <el-select id="courses" style="width: 120px; margin-top: 20px" v-model="courseSelect" @change="$forceUpdate()">
         <el-option v-for="item in courses_list" :value="item" :key="item">{{ item }}</el-option>
       </el-select><br>

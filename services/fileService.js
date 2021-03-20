@@ -1,5 +1,6 @@
 const formidable = require('formidable');
 const fs = require("fs");
+const readLine = require("readline")
 const exec = require('child_process').exec;
 exports.upLoad = (req, res,next) => {
     console.log("upLoad");
@@ -78,3 +79,55 @@ exports.course_init = (req, res,next) => {
     })
 
 }
+
+function randomsort(a, b) {
+    //随机打乱数组
+    return Math.random()>.5 ? -1 : 1;
+}
+
+exports.paper_create = (req, res,next) => {
+    console.log("paper_create");
+    var course = req.body.course;
+    var counts = req.body.counts;
+    var filename = "./services/py/cluster/out/tfidf_SC_out.txt";
+    var fRead = fs.createReadStream(filename)
+    var readObj = readLine.createInterface({input: fRead});
+    //类别及对应索引
+    var arr = []
+    //得出的题目
+    var quelist = []
+    readObj.on('line',function (line){
+        var a = line.slice(line.indexOf("[")+1,-1).split(',').sort(randomsort);
+        arr.push(a);
+    })
+    fRead.on('end', ()=>{
+        //文件读完 循环 每类取一道
+        var i = 0 ;
+        for(;;){
+            for(var j =0;j<arr.length; j++)
+            {
+                if(arr[j].length != 0)
+                {
+                    quelist.push(arr[j].shift());
+                    i += 1;
+                    if(i == counts) break;
+                }
+            }
+            if(i == counts) break;
+        }
+        var res = []
+        db_helper.getQuestions(course,function (res_list) {
+            console.log("getQuestions");
+            for(var k = 0 ; k < quelist.length;k++)
+            {
+                res.push(res_list[quelist[k]-1]);
+            }
+            res.json({
+                res_list: res,
+            });
+            return;
+        });
+    });
+
+}
+
