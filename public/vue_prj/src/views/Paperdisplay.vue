@@ -40,10 +40,10 @@
       <div class="paper-title">
         <h1><i class="el-icon-s-grid"></i>答题卡</h1>
       </div>
-      <el-collapse v-model="answerCardActiveName">
+      <el-collapse v-model="answerCardActiveName" class="answer-title">
         <el-collapse-item >
-          <h2>选择题</h2><br></br>
-          <el-button  class="answer-button" circle size="small" v-for="index of counts" :id="'answer'+index"  @click.native="jump(index)">{{index}}</el-button>
+          <h2 style="width: 500px">选择题</h2>
+          <el-button class="answer-button" circle size="small" v-for="index of dataSource.counts" :id="'answer'+index"  @click.native="jump(index)">{{index}}</el-button>
         </el-collapse-item>
       </el-collapse>
     </div>
@@ -51,15 +51,14 @@
     <div ref="paperContent" class="paper-content">
       <div class="subject">
         <div class="subject-title" >
-          <h2>选择题</h2><spn>（共 {{counts}} 题，合计 {{dataSource.totalScore}} 分）</spn>
+          <h2>选择题</h2><span>（共 {{dataSource.counts}} 题，合计 {{dataSource.totalScore}} 分）</span>
         </div>
-        <el-card class="box-card" v-for="(sub,index) in questions" :id="(index+1)">
+        <el-card class="box-card" v-for="ques in dataSource.question" :id="(ques.no)">
           <div slot="header" class="clearfix">
-            <el-tag effect="dark"> {{index}} </el-tag>
-            <span>{{sub.title}}</span>
+            <span class="que_title"> {{ques.no}}.{{ques.title}}</span>
           </div>
-          <el-checkbox-group  v-model="sub.examineAnswer">
-            <el-checkbox :disabled="disabledAnswer" v-for="o in sub.answers" :label="o.no" class="answer-checkbox" @change="answerButtionCheck($event,sub)">{{o.no}}.{{o.answer}}</el-checkbox>
+          <el-checkbox-group  v-model="ques.examineAnswer">
+            <el-checkbox :disabled="disabledAnswer" class="answer-checkbox" v-for="ans in ques.answers" :label="ans.no">{{ ans.no }}.{{ans.answer}}</el-checkbox>
           </el-checkbox-group>
           <div v-if="type!==1" class="subject-remark">
             <div class="item">
@@ -110,36 +109,47 @@ export default {
           userId: '',
           //用户名
           userName: '',
-          //分数
+          //最后得分
           score: '',
           //总分
           totalScore: 100,
           //考试时长(分钟)
           examDuration: 60,
+          //试题数
+          counts : '',
           //科目
           course: '',
           //题目集合
           question: [
             {
+              //题号
+              no: 1,
               //数据库题号
-              no: null,
+              question_id : 305,
               //题目
-              title: '',
+              title: '提高系统可靠性的常用的技术不包括',
               //选项， A... B...
               answers: [
-                {
-                  //答案序号
-                  no: '',
-                  //答案
-                  answer: ''
-                }
-              ],
+                // {
+                //   //答案序号 A B...
+                //   no: '',
+                //   //数据库序号
+                //   answer_id : '',
+                //   //答案
+                //   answer: ''
+                // }
+                {no: "A", answer_id: 1336, answer: "结构化设计技术"},
+                {no: "B", answer_id: 1337, answer: "设备冗余技术"},
+                {no: "C", answer_id: 1338, answer: "容错技术"},
+                {no: "D", answer_id: 1339, answer: "负荷分布技术"}
+
+      ],
               //考生答案
-              examineAnswer: null,
+              examineAnswer: [],
               //正确答案
-              correctAnswer: null,
+              correctAnswer: ["A"],
               //答案解析
-              answerAnalysis: '',
+              answerAnalysis: 'analysis',
               //是否对错  1.对 2.错
               isHook: null,
               //得分
@@ -162,19 +172,18 @@ export default {
       promiseTimer: '',
       //数据源
       tempDataSource: {},
-      //题目数
-      counts: 10,
       //禁止答题
       disabledAnswer:false,
       //禁止阅卷
       disabledRead:false,
       //题目
-      questions:[]
+      questions:[],
+      answerCardActiveName:''
     }
   },
   created() {
     this.dataSource.course = this.$route.query.course;
-    this.dataSource.counts = this.$route.query.counts;
+    this.dataSource.counts = parseInt(this.$route.query.counts);
     this.axios
       .post(
         "/paper/create",
@@ -184,15 +193,26 @@ export default {
         })
       )
       .then(response => {
-        console.log(response.data)
-        //
+        var temp_list = [];
+        let res_list = response.data.res_list;
+        for(var i = 0 ; i < res_list.length ; i++){
+            var temp = new Object();
+            temp.no = i+1;
+            temp.question_id = res_list[i].question_id;
+            temp.title = res_list[i].content;
+            temp.answers = res_list[i].answer_list;
+            temp.examineAnswer = [];
+            temp.correctAnswer = res_list[i].right_answer;
+            temp.answerAnalysis = res_list[i].resolve;
+            temp.isHook = false;
+            temp.score = 0;
+            temp_list.push(temp);
+        }
+        this.dataSource.question = temp_list;
+        //加载到试题列表
+        console.log(this.dataSource.question);
+
       });
-    //
-    this.convertData()
-    if(this.type===2)
-    {
-      this.disabledAnswer=true
-    }
   },
   computed: {
     hourString () {
@@ -272,27 +292,7 @@ export default {
     /**
      *答题卡选中
      */
-    answerButtionCheck(value,parent,child){
-      console.log(value,parent,child)
-      let answerId='answer'+parent.code+child.no
-      let but = this.$refs.paperLeft.querySelectorAll("#"+answerId);
-      if(but.length>0)
-      {
-        if(but[0].className.indexOf('answer-button-check')>-1)
-        {
-          if(child.examineAnswer && child.examineAnswer.length==0){
-            but[0].classList.remove("answer-button-check");
-          }
-        }
-        else{
-          if (child.examineAnswer && child.examineAnswer.length > 0) {
-            but[0].classList.add("answer-button-check");
-          }
 
-        }
-
-      }
-    },
     /**
      * 转换答案
      */
@@ -352,12 +352,12 @@ export default {
   right: 0;
   bottom: 0;
   left: 0;
-  overflow: hidden
+  overflow: hidden;
 }
 
 .paper-header {
   width: 100%;
-  height: 60px;
+  height: 70px;
   background-color: #f7f7f7;
   position: absolute;
   top: 0;
@@ -370,19 +370,20 @@ export default {
   position: absolute;
   padding: 10px;
   left: 0;
-  top: 60px;
+  top: 70px;
   bottom: 0;
   width: 300px;
   overflow-x: hidden;
   overflow-y: auto;
   border: 1px solid #e4e4e4;
   border-top: none;
+  background-color: #ffffff;
 }
 
 .paper-content {
   position: absolute;
   left: 305px;
-  top: 60px;
+  top: 70px;
   right: 0px;
   bottom: 45px;
   overflow-x: hidden;
@@ -391,6 +392,7 @@ export default {
   padding: 10px;
   border: 1px solid #e4e4e4;
   border-top: none;
+  background-color: #ffffff;
 }
 
 .paper-footer {
@@ -409,11 +411,15 @@ export default {
 }
 
 .paper-title {
-  padding-left: 10px;
-  width: 100%;
+  width: 95%;
   height: 45px;
   line-height: 45px;
   background: #f7f7f7;
+}
+
+.answer-title {
+  width: 95%;
+  text-align: left;
 }
 
 .paper-title h1 {
@@ -431,33 +437,26 @@ export default {
   color: #0a0a0a;
   background-color: #ffffff;
   border-color: #e4e4e4;
-  margin-left: 10px;
+  margin-left: auto;
+  margin-right: 20px;
   width: 30px;
   height: 30px;
-}
-.answer-button:hover{
-  background: #ecf1ef;
-  border-color: #e4e4e4;
-  color: #0a0a0a;
-}
-.answer-button-check{
-  background: #13ce66;
-  border-color: #30B08F;
-}
-
-.answer-radio{
-  display: list-item;
-  margin: 5px 0px;
 }
 
 .answer-checkbox{
   display: list-item;
   margin: 5px 0px;
+  list-style-type: none;
+}
+
+.subject{
+  padding-left:5px;
 }
 
 .subject-title{
-  padding-left: 10px;
-  width: 100%;
+  text-align:left;
+  padding-left:10px;
+  width: 98%;
   height: 45px;
   line-height: 45px;
   background: #f7f7f7;
@@ -517,5 +516,16 @@ export default {
 .el-card >>>.el-card__body {
   padding: 5px 20px;
 }
+
+.box-card {
+  text-align: left;
+  padding-left: 0px;
+}
+
+.el-button+.el-button{
+  margin-top: 10px;
+}
+
+
 </style>
 

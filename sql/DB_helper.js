@@ -140,9 +140,13 @@ function DB_helper() {
                         answers.sort(randomsort)
                         for(var k =0;k<answers.length;k++)
                         {
-                            question.answer_list.push([String.fromCharCode(answer_id + 64),answers[k][0]])
-                            if(right_answer_num.indexOf(answers[k][1].toString()) !== -1){
-                                question.right_answer.push(String.fromCharCode(answer_id + 64))
+                            var temp = new Object();
+                            temp.no = String.fromCharCode(answer_id + 64);
+                            temp.answer_id = answers[k][1];
+                            temp.answer = answers[k][0];
+                            question.answer_list.push(temp)
+                            if(right_answer_num.indexOf(temp.answer_id.toString()) !== -1){
+                                question.right_answer.push(temp.no)
                             }
                             answer_id +=1 ;
                         }

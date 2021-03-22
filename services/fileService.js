@@ -115,19 +115,19 @@ exports.paper_create = (req, res,next) => {
             }
             if(i == counts) break;
         }
-        var res = new Array(quelist.length)
+        var resl = new Array(quelist.length)
         db_helper.getQuestions(course,function (res_list) {
             console.log("getQuestions");
             for(var k = 0 ; k < res_list.length;k++)
             {
                 if(quelist.indexOf(res_list[k].question_id) !== -1){
-                    res[quelist.indexOf(res_list[k].question_id)] = res_list[k];
+                    resl[quelist.indexOf(res_list[k].question_id)] = res_list[k];
                 }
             }
             console.log(quelist)
-            console.log(res)
+            console.log(resl)
             res.json({
-                res_list: res,
+                res_list: resl,
             });
             return;
         });
