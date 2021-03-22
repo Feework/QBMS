@@ -108,20 +108,24 @@ exports.paper_create = (req, res,next) => {
             {
                 if(arr[j].length != 0)
                 {
-                    quelist.push(arr[j].shift());
+                    quelist.push(parseInt(arr[j].shift()));
                     i += 1;
                     if(i == counts) break;
                 }
             }
             if(i == counts) break;
         }
-        var res = []
+        var res = new Array(quelist.length)
         db_helper.getQuestions(course,function (res_list) {
             console.log("getQuestions");
-            for(var k = 0 ; k < quelist.length;k++)
+            for(var k = 0 ; k < res_list.length;k++)
             {
-                res.push(res_list[quelist[k]-1]);
+                if(quelist.indexOf(res_list[k].question_id) !== -1){
+                    res[quelist.indexOf(res_list[k].question_id)] = res_list[k];
+                }
             }
+            console.log(quelist)
+            console.log(res)
             res.json({
                 res_list: res,
             });

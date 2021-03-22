@@ -148,7 +148,6 @@ function DB_helper() {
                         }
                         res_list.push(question)
                     }
-                    console.log(res_list);
                     if (cb != null) return cb(res_list);
                 })
           });
