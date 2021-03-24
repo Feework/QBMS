@@ -10,7 +10,7 @@
           </el-col>
           <el-col :span="4">
             <el-form-item label="考生">
-              {{dataSource.userName}}
+              {{dataSource.userId}}
             </el-form-item>
           </el-col>
           <el-col :span="4">
@@ -53,7 +53,7 @@
         <div class="subject-title" >
           <h2>选择题</h2><span>（共 {{dataSource.counts}} 题，合计 {{dataSource.totalScore}} 分）</span>
         </div>
-        <el-card class="box-card" v-for="ques in dataSource.question" :id="(ques.no)">
+        <el-card class="box-card" v-for="ques in dataSource.question" :id="(ques.no)" ref="(ques.no)">
           <div slot="header" class="clearfix">
             <span class="que_title"> {{ques.no}}.{{ques.title}}</span>
           </div>
@@ -182,20 +182,23 @@ export default {
     }
   },
   created() {
-    this.dataSource.course = this.$route.query.course;
-    this.dataSource.counts = parseInt(this.$route.query.counts);
-    this.axios
-      .post(
-        "/paper/create",
-        this.qs.stringify({
-          course: this.dataSource.course,
-          counts: this.dataSource.counts
-        })
-      )
-      .then(response => {
-        var temp_list = [];
-        let res_list = response.data.res_list;
-        for(var i = 0 ; i < res_list.length ; i++){
+    console.log(this.$route.query.paper_id == null)
+    if(this.$route.query.paper_id !== null){
+      this.dataSource.paperId = this.$route.query.paper_id;
+      this.dataSource.paperName = this.$route.query.paper_name;
+      this.axios
+        .post(
+          "/paper/get_paper_by_id",
+          this.qs.stringify({
+            paper_id: this.dataSource.paperId
+          })
+        )
+        .then(response => {
+          var temp_list = [];
+          let res_list = response.data.res_list;
+          this.dataSource.counts = res_list.length;
+          this.dataSource.userId = response.data.user_id.toString().padStart(6,'0');
+          for(var i = 0 ; i < res_list.length ; i++){
             var temp = new Object();
             temp.no = i+1;
             temp.question_id = res_list[i].question_id;
@@ -207,12 +210,48 @@ export default {
             temp.isHook = false;
             temp.score = 0;
             temp_list.push(temp);
-        }
-        this.dataSource.question = temp_list;
-        //加载到试题列表
-        console.log(this.dataSource.question);
+          }
+          this.dataSource.question = temp_list;
+          //加载到试题列表
+          console.log(this.dataSource.question);
 
-      });
+        });
+    }
+    if(this.$route.query.paper_id == null)
+    {
+      this.dataSource.course = this.$route.query.course;
+      this.dataSource.counts = parseInt(this.$route.query.counts);
+      this.axios
+        .post(
+          "/paper/create",
+          this.qs.stringify({
+            course: this.dataSource.course,
+            counts: this.dataSource.counts
+          })
+        )
+        .then(response => {
+          var temp_list = [];
+          let res_list = response.data.res_list;
+          for(var i = 0 ; i < res_list.length ; i++){
+            var temp = new Object();
+            temp.no = i+1;
+            temp.question_id = res_list[i].question_id;
+            temp.title = res_list[i].content;
+            temp.answers = res_list[i].answer_list;
+            temp.examineAnswer = [];
+            temp.correctAnswer = res_list[i].right_answer;
+            temp.answerAnalysis = res_list[i].resolve;
+            temp.isHook = false;
+            temp.score = 0;
+            temp_list.push(temp);
+          }
+          this.dataSource.question = temp_list;
+          this.dataSource.userId = response.data.user_id.toString().padStart(6,'0');
+          this.dataSource.paperName = response.data.paper_name;
+          //加载到试题列表
+        });
+    }
+
   },
   computed: {
     hourString () {
@@ -267,11 +306,11 @@ export default {
      * 锚点定位
      */
     jump(postion) {
-      let jump = this.$refs.paperContent.querySelectorAll("#"+postion);
-      // 获取需要滚动的距离
-      let total = jump[0].offsetTop;
-      //实现form锚点定位
-      this.$refs.paperContent.scrollTop = jump[0].offsetTop;
+      console.log(postion)
+      document.getElementById(postion).scrollIntoView({
+        behavior: "smooth",  // 平滑过渡
+        block:    "start"  // 上边框与视窗顶部平齐。默认值
+      });
     },
     /**
      *对错选择 每有一个选项被选，就修改一次答案数组，最后遍历题目数组

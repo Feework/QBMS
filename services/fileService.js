@@ -115,23 +115,62 @@ exports.paper_create = (req, res,next) => {
             }
             if(i == counts) break;
         }
+        //此处得到所需题号
+        db_helper.addPaper(user_id,course,counts,quelist,100,function (paper_id,paper_name) {
+            var resl = new Array(quelist.length)
+            db_helper.getQuestions(course,function (res_list) {
+                for(var k = 0 ; k < res_list.length;k++)
+                {
+                    if(quelist.indexOf(res_list[k].question_id) !== -1){
+                        resl[quelist.indexOf(res_list[k].question_id)] = res_list[k];
+                    }
+                }
+                console.log(quelist)
+                console.log(resl)
+                res.json({
+                    res_list: resl,
+                    paper_name: paper_name,
+                    user_id: user_id
+                });
+                return;
+            });
+        });
+
+    });
+}
+
+exports.get_paper_list = (req, res,next) => {
+    console.log("get_paper_list");
+    db_helper.getpaperlist(user_id,function (res_list) {
+        res.json({
+            res_list: res_list,
+        });
+        return;
+    });
+
+}
+
+exports.get_paper_by_id = (req, res,next) => {
+    console.log("get_paper_by_id")
+    var paper_id = req.body.paper_id;
+    db_helper.getqueslist(paper_id,function (course,question_list){
+        var quelist = question_list.split(",");
         var resl = new Array(quelist.length)
         db_helper.getQuestions(course,function (res_list) {
-            console.log("getQuestions");
             for(var k = 0 ; k < res_list.length;k++)
             {
-                if(quelist.indexOf(res_list[k].question_id) !== -1){
-                    resl[quelist.indexOf(res_list[k].question_id)] = res_list[k];
+                if(quelist.indexOf(res_list[k].question_id.toString()) !== -1){
+                    resl[quelist.indexOf(res_list[k].question_id.toString())] = res_list[k];
                 }
             }
             console.log(quelist)
             console.log(resl)
             res.json({
                 res_list: resl,
+                user_id: user_id
             });
             return;
         });
+
     });
-
 }
-

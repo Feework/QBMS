@@ -2,7 +2,7 @@
 var formidable = require('formidable');
 exports.signIn = (req, res,next) => {
     console.log("signin");
-    var user_id = parseInt(req.body.account);
+    user_id = parseInt(req.body.account);
     db_helper.signIn(user_id, req.body.pass, function (status, name) {
         //status:: 0: verified ; 1:not exists ; 2:verification error
         if (status === 0) {

@@ -6,6 +6,7 @@ var DB_helper= require('./sql/DB_helper')
 //db_helper
 global.db_helper = new DB_helper();
 global.db_helper.createTables();
+global.user_id = "1";
 
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');

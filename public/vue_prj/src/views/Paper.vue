@@ -16,7 +16,22 @@
     </div>
     <div class="right">
       <h2>历史试卷</h2>
-      <el-button type="primary" @click="skip_upload()" class="skip_style">历史试卷</el-button>
+      <el-table
+        :row-style="{height:'45px'}"
+        :cell-style="{padding:'0px'}"
+        class="tb"
+        ref="multipleTable"
+        :data="tableData"
+        @select="selectChange"
+        @selection-change="handleSelectionChange"
+        @row-click="handleRowClick"
+        :header-cell-style="{background:'#F4F4F4'}"
+        border>
+        <el-table-column type="selection"  width="50" ></el-table-column>
+        <el-table-column prop="paper_name" label="试卷" width="180"></el-table-column>
+        <el-table-column prop="paper_id" label="试卷id" v-if="false"></el-table-column>
+      </el-table>
+      <el-button type="primary" @click="open_paper()" class="right_button">打开试卷</el-button>
     </div>
   </div>
 </template>
@@ -26,6 +41,14 @@ export default {
   name: "Paper",
   data () {
     return {
+      tableData: [{
+        paper_name: '试卷1',
+        paper_id: 1
+      },{
+        paper_name: '试卷2',
+        paper_id: 2
+      }],
+      handleSelectionList:[],
       courses_list: [
         "aaa","bbb"
       ],
@@ -42,6 +65,14 @@ export default {
         let res_list = response.data.res_list;
         this.courses_list = res_list
         console.log(this.courses_list)
+      });
+    this.axios
+      .post(
+        "/paper/get_paper_list"
+      )
+      .then(response => {
+        this.tableData = response.data.res_list;
+        console.log(this.tableData)
       });
   },
   methods: {
@@ -65,6 +96,36 @@ export default {
         counts: this.countsSelect,
         course: this.courseSelect
       }});
+    },
+    open_paper() {
+      console.log("length" + this.handleSelectionList.length)
+      if(0 == this.handleSelectionList.length) {
+        this.$message({
+          type: 'info',
+          message: '请选择试卷'
+        });
+        return;
+      }
+      this.$router.push({ path: "/paperdisplay" ,
+        query:{
+          paper_id : this.handleSelectionList[0].paper_id,
+          paper_name : this.handleSelectionList[0].paper_name,
+        }});
+    },
+    handleSelectionChange(value) {
+      this.handleSelectionList = value
+      console.log(this.handleSelectionList)
+    },
+    selectChange(selection, row) {
+      if (selection.length > 1) {
+        const del_row = selection.shift()
+        this.$refs.multipleTable.toggleRowSelection(del_row, false)
+      }
+    },
+    // 点击行触发，选中或不选中复选框
+    handleRowClick(row, column, event) {
+      this.$refs.multipleTable.toggleRowSelection(row)
+      this.selectChange(this.handleSelectionList)
     }
   }
 }
@@ -96,4 +157,24 @@ export default {
   background-color: #4e519e !important;
   border: #4e519e !important;
 }
+
+/deep/ .el-table__header-wrapper  .el-checkbox{
+  display:none
+}
+
+.tb{
+  width: 232px;
+  height: 409px;
+  overflow: auto;
+}
+
+.right_button{
+  width: 150px;
+  background-color: #4e519e !important;
+  border: #4e519e !important;
+  position: absolute;
+  bottom: 280px;
+  margin-left: 50px;
+}
+
 </style>

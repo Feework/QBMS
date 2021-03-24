@@ -23,7 +23,23 @@ function DB_helper() {
                 "   `password` VARCHAR(12) NOT NULL,\n" +
                 "   `role` int DEFAULT 0\n" +
                 ");";
+            var sql1="CREATE TABLE IF NOT EXISTS `paper`(\n" +
+                "   `paper_id` INT AUTO_INCREMENT PRIMARY KEY,\n" +
+                "   `paper_name` VARCHAR(100) NOT NULL,\n" +
+                "   `user_id` INT NOT NULL,\n" +
+                "   `course_id` INT NOT NULL,\n" +
+                "   `question_num` INT NOT NULL,\n" +
+                "   `question_list` VARCHAR(500) NOT NULL,\n" +
+                "   `time` datetime NOT NULL,\n" +
+                "   `points` int DEFAULT 100\n" +
+                ");";
             connection.query(sql,function (err) {
+                if(err){
+                    console.log("[CREATE TABLE ERROR - ]",err.message);
+                    return;
+                }
+            });
+            connection.query(sql1,function (err) {
                 if(err){
                     console.log("[CREATE TABLE ERROR - ]",err.message);
                     return;
@@ -159,7 +175,89 @@ function DB_helper() {
         });
 
     };
+    this.addPaper = function (user_id,course,counts,ques_list,points, cb) {
+            var sql = 'INSERT INTO paper ' +
+                '(paper_name,user_id,course_id,question_num,question_list,time,points) ' +
+                'values(?,?,?,?,?,?,?);';
+            var sql1 = 'select course_id from course where course_name = ?'
+            var sql2 = 'select count(*) as count from paper where course_id = ?'
+            connection.query(sql1, course, function (err, result) {
+                if (err) {
+                    console.log( err.message);
+                    return;
+                }
+                var course_id = result[0].course_id
+                connection.query(sql2, course_id,function (err, result) {
+                    console.log(result);
+                    if (err) {
+                        console.log(err.message);
+                        return;
+                    }
+                    que_num = result[0].count
+                    var paper_name = course + (que_num+1);
+                    var date = new Date();
+                    var time = date.toISOString().split('T')[0] + ' '
+                            + date.toTimeString().split(' ')[0];
+                    var SqlParams = [paper_name,user_id, course_id,counts,ques_list.toString(),time,points];
+                    connection.query(sql,SqlParams,function (err, result) {
+                        if (err) {
+                            console.log(err.message);
+                            return;
+                        }
+                        var sql3 = 'SELECT * FROM paper ORDER BY paper_id DESC LIMIT 1';
+                        connection.query(sql3,function (err, result) {
+                            if (err) {
+                                console.log(err.message);
+                                return;
+                            }
+                            if (cb != null) return cb(result[0].paper_id,result[0].paper_name);
+                        });
+                    });
+
+                });
+            });
+    };
+
+    this.getqueslist = function (paper_id, cb) {
+        var sql = "select course_id,question_list from paper where paper_id = ?"
+        var sql1 = "select course_name from course where course_id = ?"
+        connection.query(sql,paper_id,function (err, result) {
+            if (err) {
+                console.log(err.message);
+                return;
+            }
+            connection.query(sql1,result[0].course_id,function (err, result1) {
+                if (err) {
+                    console.log(err.message);
+                    return;
+                }
+                if (cb != null) return cb(result1[0].course_name,result[0].question_list);
+            });
+
+        });
+    };
+
+    this.getpaperlist = function (user_id,cb) {
+        var sql = "select paper_id,paper_name from paper where user_id = ?"
+        connection.query(sql,user_id,function (err, result) {
+            if (err) {
+                console.log(err.message);
+                return;
+            }
+            var res = []
+            for (var i =0 ; i < result.length ; i++)
+            {
+                var temp = new Object();
+                temp.paper_id = result[i].paper_id;
+                temp.paper_name = result[i].paper_name;
+                res.push(temp);
+            }
+            if (cb != null) return cb(res);
+        });
+    }
 }
+
+
 
 function randomsort(a, b) {
     //随机打乱数组

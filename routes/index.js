@@ -12,6 +12,7 @@ router.post('/index/signup', userservice.signUp); /*用户注册接口*/
 router.post('/manager/upload', fileservice.upLoad); /*管理员导入题目接口*/
 router.post('/manager/upload_init', fileservice.course_init); /*课程显示初始化接口*/
 router.post('/paper/create',fileservice.paper_create); /*试卷生成接口*/
-
+router.post('/paper/get_paper_list',fileservice.get_paper_list); /*获取试卷列表接口*/
+router.post('/paper/get_paper_by_id',fileservice.get_paper_by_id); /*获取试卷列表接口*/
 
 module.exports = router;
