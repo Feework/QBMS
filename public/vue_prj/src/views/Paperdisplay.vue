@@ -43,7 +43,7 @@
       <el-collapse v-model="answerCardActiveName" class="answer-title">
         <el-collapse-item >
           <h2 style="width: 500px">选择题</h2>
-          <el-button class="answer-button" circle size="small" v-for="index of dataSource.counts" :id="'answer'+index"  @click.native="jump(index)">{{index}}</el-button>
+          <el-button class="answer-button" circle size="small" v-for="index of dataSource.counts" :id="'answer'+(index)"  @click.native="jump(index)">{{index}}</el-button>
         </el-collapse-item>
       </el-collapse>
     </div>
@@ -58,20 +58,27 @@
             <span class="que_title"> {{ques.no}}.{{ques.title}}</span>
           </div>
           <el-checkbox-group  v-model="ques.examineAnswer">
-            <el-checkbox :disabled="disabledAnswer" class="answer-checkbox" v-for="ans in ques.answers" :label="ans.no">{{ ans.no }}.{{ans.answer}}</el-checkbox>
+            <el-checkbox :disabled="type!==1" class="answer-checkbox" v-for="ans in ques.answers" :label="ans.no">{{ ans.no }}.{{ans.answer}}</el-checkbox>
           </el-checkbox-group>
           <div v-if="type!==1" class="subject-remark">
             <div class="item">
+              <span class="title">是否正确：</span>
+              <span v-if="ques.isHook">正确  </span>
+              <span v-if="!ques.isHook">错误  </span>
+              <span class="title">得分：</span>
+              <span>{{ques.score}}</span>
+            </div>
+            <div class="item">
               <span class="title">考生答案：</span>
-              <span>{{converAnswerStr(sub.examineAnswer)}}</span>
+              <span>{{ques.examineAnswer}}</span>
             </div>
             <div class="item">
               <span class="title">正确答案：</span>
-              <span>{{converAnswerStr(sub.correctAnswer)}}</span>
+              <span>{{ques.correctAnswer}}</span>
             </div>
             <div class="item">
               <span class="title">答案解析：</span>
-              <span>{{sub.answerAnalysis}}</span>
+              <span>{{ques.answerAnalysis}}</span>
             </div>
           </div>
         </el-card>
@@ -79,15 +86,15 @@
     </div>
 
     <div class="paper-footer">
-      <el-button v-if="type===1" type="success" @click.native="btnClick('handPaper')">交卷</el-button>
-      <el-button v-if="type===2" type="success" @click.native="btnClick('readPaper')">阅卷</el-button>
-      <el-button v-if="type===2" type="success" @click.native="btnClick('readPaperUpper')">上一个</el-button>
-      <el-button v-if="type===2" type="success" @click.native="btnClick('readPaperNext')">下一个</el-button>
+      <el-button v-if="type===1" class="hand_button" @click="handpaper" id="hand">交卷</el-button>
     </div>
   </div>
 </template>
 
 <script>
+function scalarArrayEquals(array1,array2) {
+  return array1.length==array2.length && array1.every(function(v,i) { return v === array2[i]});
+}
 export default {
   name: 'examinationPaper',
   props: {
@@ -116,7 +123,7 @@ export default {
           //考试时长(分钟)
           examDuration: 60,
           //试题数
-          counts : '',
+          counts : 1,
           //科目
           course: '',
           //题目集合
@@ -172,16 +179,11 @@ export default {
       promiseTimer: '',
       //数据源
       tempDataSource: {},
-      //禁止答题
-      disabledAnswer:false,
-      //禁止阅卷
-      disabledRead:false,
-      //题目
-      questions:[],
       answerCardActiveName:''
     }
   },
   created() {
+    this.type = 1;
     console.log(this.$route.query.paper_id == null)
     if(this.$route.query.paper_id !== null){
       this.dataSource.paperId = this.$route.query.paper_id;
@@ -277,70 +279,36 @@ export default {
     }
 
   },
+
   methods: {
-    /**
-     * 按钮点击事件
-     */
-    btnClick(type){
-      console.log(this.tempDataSource);
-      switch (type) {
-        //交卷
-        case 'handPaper':
-          this.$emit('PaperHand',this.tempDataSource)
-          break
-        //阅卷
-        case 'readPaper':
-          this.$emit('paperRead',this.tempDataSource)
-          break
-        //阅卷 上一个
-        case 'readPaperUpper':
-          this.$emit('paperReadUpper')
-          break
-        //阅卷 下一个
-        case 'readPaperNext':
-          this.$emit('paperReadNext')
-          break
+    handpaper(){
+      this.type = 2;
+      var point = this.dataSource.totalScore / this.dataSource.counts;
+      var total = 0;
+      for(var i = 0; i < this.dataSource.question.length ; i++){
+          if(scalarArrayEquals(this.dataSource.question[i].examineAnswer,this.dataSource.question[i].correctAnswer)){
+            //正确
+            this.dataSource.question[i].isHook = 1;
+            this.dataSource.question[i].score = point;
+            total += point;
+          }
+          else {
+            //错误
+            this.dataSource.question[i].isHook = 0;
+            this.dataSource.question[i].score = 0;
+            document.getElementById('answer'+(i+1)).style.backgroundColor = "red";
+          }
       }
+      this.dataSource.score = total;
     },
     /**
      * 锚点定位
      */
     jump(postion) {
-      console.log(postion)
       document.getElementById(postion).scrollIntoView({
         behavior: "smooth",  // 平滑过渡
         block:    "start"  // 上边框与视窗顶部平齐。默认值
       });
-    },
-    /**
-     *对错选择 每有一个选项被选，就修改一次答案数组，最后遍历题目数组
-     */
-    isHookButtionCheck(val) {
-      if(val.type===1 || val.type===2 || val.type===3)
-      {
-        if(val.isHook===1)
-        {
-          val.score=val.totalScore;
-        }
-        if(val.isHook===2)
-        {
-          val.score=0;
-        }
-      }
-    },
-    /**
-     *答题卡选中
-     */
-
-    /**
-     * 转换答案
-     */
-    converAnswerStr(answer){
-      if(answer instanceof Array)
-      {
-        return answer.join('  ')
-      }
-      return  answer
     },
     /**
      * 倒计时
@@ -351,7 +319,7 @@ export default {
       this.promiseTimer = setInterval(function () {
         if(self.hour===0 && self.minute===0 && self.second===0)
         {
-          self.disabledAnswer=true;
+          document.getElementById("hand").click();
         }
         if (self.hour === 0) {
           if (self.minute !== 0 && self.second === 0) {
@@ -359,7 +327,6 @@ export default {
             self.minute -= 1
           } else if (self.minute === 0 && self.second === 0) {
             self.second = 0
-            self.$emit('countDowmEnd', true)
             clearInterval(self.promiseTimer)
           } else {
             self.second -= 1
@@ -397,7 +364,7 @@ export default {
 .paper-header {
   width: 100%;
   height: 70px;
-  background-color: #f7f7f7;
+  background-color: #4e519e;
   position: absolute;
   top: 0;
   z-index: 1000;
@@ -464,6 +431,8 @@ export default {
 .paper-title h1 {
   font-size: 1.2em;
   margin: 0;
+  background-color: #4e519e;
+  color: #f7f7f7;
 }
 
 .downTime{
@@ -498,17 +467,19 @@ export default {
   width: 98%;
   height: 45px;
   line-height: 45px;
-  background: #f7f7f7;
+  background: #4e519e;
   box-shadow: 0 1px 1px 0 rgba(0, 0, 0, .1);
   -webkit-box-shadow: 0 1px 1px 0 rgba(0, 0, 0, .1);
 }
 .subject-title h2{
   font-size: 16px;
   display: inline-block;
+  color: #f7f7f7;
 }
 .subject-title span {
   font-size: 16px;
   display: inline-block;
+  color: #f7f7f7;
 }
 
 .subject-remark{
@@ -521,14 +492,6 @@ export default {
 .subject-remark .title{
   font-weight: bold;
 }
-.el-radio>>>.el-radio__input.is-checked .el-radio__inner {
-  background-color: #13ce66;
-  border-color: #13ce66;
-}
-
-.el-radio-button>>>.el-radio-button__inner {
-  padding: 10px;
-}
 
 .el-collapse-item h2 {
   width: 150px;
@@ -540,10 +503,10 @@ export default {
   display: inline-block;
   text-align: left;
   padding: 0px;
+  color: #f7f7f7;
 }
-
-.el-card{
-  margin: 10px;
+.el-form--label-top >>> .el-form-item__content {
+  color: #f7f7f7;
 }
 
 .el-card >>>.el-card__header {
@@ -565,6 +528,13 @@ export default {
   margin-top: 10px;
 }
 
+.hand_button{
+  width: 170px;
+  color: #f7f7f7;
+  margin-bottom: 10px !important;
+  background-color: #4e519e !important;
+  border: #4e519e !important;
+}
 
 </style>
 

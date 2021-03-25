@@ -41,13 +41,7 @@ export default {
   name: "Paper",
   data () {
     return {
-      tableData: [{
-        paper_name: '试卷1',
-        paper_id: 1
-      },{
-        paper_name: '试卷2',
-        paper_id: 2
-      }],
+      tableData: [],
       handleSelectionList:[],
       courses_list: [
         "aaa","bbb"
