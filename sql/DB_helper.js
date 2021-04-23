@@ -75,6 +75,7 @@ function DB_helper() {
             var sql = 'INSERT INTO user ' +
                 '(password, user_name) ' +
                 'values(?, ?);';
+            var sql_ud = 'UPDATE user SET role = 1 WHERE user_id = 1'
             var SqlParams = [password, name];
             connection.query(sql, SqlParams, function (err, result) {
                 if (err) {
@@ -88,7 +89,18 @@ function DB_helper() {
                         console.log(err.message);
                         return;
                     }
+                    if (result[0].user_id === 1){
+                        connection.query(sql_ud,function (err, result3) {
+                            if (err) {
+                                console.log(err.message);
+                                return;
+                            }
+                            if (cb != null) return cb(result[0].user_id);
+                        });
+                    }
+                    else{
                     if (cb != null) return cb(result[0].user_id);
+                    }
                 });
 
             });
@@ -134,11 +146,13 @@ function DB_helper() {
                         return;
                     }
                     var i = 0;
+                    var count = 1;
                     for (var j=0;j<result1.length;j++)
                     {
                         i = result1[j].question_id;
                         var question = new Object();
-                        question.question_id = result1[j].question_id
+                        question.question_id = count;
+                        count = count+1;
                         question.content = result1[j].que_content
                         question.resolve = result1[j].resolve
                         question.answer_list = []
@@ -180,14 +194,14 @@ function DB_helper() {
                 '(paper_name,user_id,course_id,question_num,question_list,time,points) ' +
                 'values(?,?,?,?,?,?,?);';
             var sql1 = 'select course_id from course where course_name = ?'
-            var sql2 = 'select count(*) as count from paper where course_id = ?'
+            var sql2 = 'select count(*) as count from paper where course_id = ? and user_id = ?'
             connection.query(sql1, course, function (err, result) {
                 if (err) {
                     console.log( err.message);
                     return;
                 }
                 var course_id = result[0].course_id
-                connection.query(sql2, course_id,function (err, result) {
+                connection.query(sql2, [course_id,user_id],function (err, result) {
                     console.log(result);
                     if (err) {
                         console.log(err.message);

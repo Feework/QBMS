@@ -41,6 +41,7 @@ export default {
   name: "Paper",
   data () {
     return {
+      user_id : '',
       tableData: [],
       handleSelectionList:[],
       courses_list: [
@@ -51,6 +52,8 @@ export default {
     }
   },
   created() {
+    this.user_id = parseInt(this.$route.query.user_id.toString())
+    console.log("id" + this.user_id)
     this.axios
       .post(
         "/manager/upload_init"
@@ -62,7 +65,10 @@ export default {
       });
     this.axios
       .post(
-        "/paper/get_paper_list"
+        "/paper/get_paper_list",
+        this.qs.stringify({
+          user_id: this.user_id,
+        })
       )
       .then(response => {
         this.tableData = response.data.res_list;
@@ -88,7 +94,8 @@ export default {
       this.$router.push({ path: "/paperdisplay" ,
       query:{
         counts: this.countsSelect,
-        course: this.courseSelect
+        course: this.courseSelect,
+        user_id: this.user_id
       }});
     },
     open_paper() {

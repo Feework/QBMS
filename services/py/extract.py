@@ -21,7 +21,7 @@ sql_init2 = """CREATE TABLE IF NOT EXISTS choices(
                 )"""
 
 sql_insert_mul = """INSERT INTO multiple_choice(content,resolve,course_id)
-                SELECT %s,%s,%s FROM DUAL WHERE NOT EXISTS(SELECT content FROM multiple_choice WHERE content = %s)
+                SELECT %s,%s,%s FROM DUAL WHERE NOT EXISTS(SELECT content FROM multiple_choice WHERE content = %s and course_id = %s)
                 """
 sql_insert_choices = """INSERT INTO choices(content,question_id)
                 VALUES (%s,%s)"""
@@ -92,7 +92,7 @@ for tb in tbs:
                 # choices中为错误答案，right中为正确答案
                 if titles not in titles_list:
                     titles_list.append(titles)
-                    insert = cur.execute(sql_insert_mul, (titles, resolve, course_id, titles))
+                    insert = cur.execute(sql_insert_mul, (titles, resolve, course_id, titles,course_id))
                     if insert == 0:
                         break
                     index = cur.lastrowid

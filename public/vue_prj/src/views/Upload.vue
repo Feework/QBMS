@@ -76,19 +76,27 @@ export default {
         })
         .then(response => {
           let res = response.data;
-          if (res.status === "0") {
+          console.log(res.status)
+          if (res.status === 0) {
+            console.log("000")
             this.$message({
               showClose: true,
               message: "上传成功！",
               type: "success"
             });
-          } else if (res.status === "1") {
+          } else{
+            console.log("111")
             this.$message({
               showClose: true,
               message: "上传失败！",
               type: "error"
             });
           }
+          this.$router.push({
+            path: "/Mainpage",
+            query:{
+              user_id: this.$route.query.user_id
+            }});
         });
     },
   }

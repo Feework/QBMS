@@ -8,9 +8,11 @@ from sklearn.metrics import silhouette_score
 from gensim.models import Word2Vec
 from gensim.models import word2vec
 import matplotlib.pyplot as plt
+import sys
 
+course = sys.argv[1]
 outputDir = "./services/py/cluster/out/"  # 结果输出地址
-filename = "./services/py/cluster/data_cut.txt"
+filename = "./services/py/cluster/" + course + "_data_cut.txt"
 corpus = []
 f = open(filename, 'r', encoding='utf-8')  # 语料库 按题读入成[]\
 for line in f.readlines():
@@ -18,7 +20,6 @@ for line in f.readlines():
     corpus.append(line)
 save_model_name = './services/py/cluster/word2vec.model'
 size = 150
-
 def countIdf(corpus):
     vectorizer = CountVectorizer() #该类会将文本中的词语转换为词频矩阵，矩阵元素a[i][j] 表示j词在i类文本下的词频
     transformer = TfidfTransformer()  # 该类会统计每个词语的tf-idf权值
@@ -98,7 +99,8 @@ def output(result, outputDir, clusters, title):
     while (os.path.exists(outputDir + outputFile + type)):
         count += 1
         outputFile = title + 'out' + str(count)
-    doc = open(outputDir + outputFile + type, 'w',encoding='utf-8')
+    # 原始文件名outputDir + outputFile + type,此处统一改为out.txt
+    doc = open(outputDir + course + "_out.txt", 'w',encoding='utf-8')
     for i in range(0, clusters):
         print(result[i], file=doc)
     doc.close()

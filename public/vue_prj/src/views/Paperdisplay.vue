@@ -185,7 +185,8 @@ export default {
   created() {
     this.type = 1;
     console.log(this.$route.query.paper_id == null)
-    if(this.$route.query.paper_id !== null){
+    if(this.$route.query.paper_id != null){
+      console.log("to get_paper_by_id" + this.$route.query.paper_id)
       this.dataSource.paperId = this.$route.query.paper_id;
       this.dataSource.paperName = this.$route.query.paper_name;
       this.axios
@@ -221,6 +222,7 @@ export default {
     }
     if(this.$route.query.paper_id == null)
     {
+      console.log("createpaper")
       this.dataSource.course = this.$route.query.course;
       this.dataSource.counts = parseInt(this.$route.query.counts);
       this.axios
@@ -228,7 +230,8 @@ export default {
           "/paper/create",
           this.qs.stringify({
             course: this.dataSource.course,
-            counts: this.dataSource.counts
+            counts: this.dataSource.counts,
+            user_id: this.$route.query.user_id
           })
         )
         .then(response => {

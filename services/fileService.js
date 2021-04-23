@@ -4,27 +4,46 @@ const readLine = require("readline")
 const exec = require('child_process').exec;
 exports.upLoad = (req, res,next) => {
     console.log("upLoad");
+    process(req);
+    res.json({
+        status: 0
+    });
+    return;
+}
+function generateFilename(oldFilename){
+    //将老的文件名拼上时间戳，这样既不会命名冲突又可以看出文件的上传事件
+    let d = new Date();
+    let names = oldFilename.split(".");
+    return `${ names[0]}_${ ""+d.getFullYear() + (d.getMonth()+1) + d.getDate() +'_'+ d.getHours() + d.getMinutes() + d.getSeconds()}.${ names[1]}`;
+}
+
+function process(req){
     var form = new formidable.IncomingForm();
     form.encoding = 'utf-8';
     form.uploadDir = './public/files/';
     form.keepExtensions = true
     form.parse(req, function(err, fields, files){
-        if(err) throw err;
+        if(err) {
+            throw err;
+            return;
+        }
         console.log(fields);
         var oldFilename = files.fileUpload.name;
-        var newFilename = form.uploadDir + generateFilename(oldFilename)
+        var newFilename = form.uploadDir + fields.course.toString() + "_" + generateFilename(oldFilename)
         fs.rename(files.fileUpload.path, newFilename,err=>{
             if(err) {
                 console.log("重命名失败");
                 console.log(err);
+                return;
             }else{
                 console.log("重命名成功!");
                 var cmdStr = 'python ./services/py/extract.py '+newFilename+' '+ fields.course;
-                var cmdStr1 = 'python ./services/py/split.py '
-                var cmdStr2 = 'python ./services/py/word2vec_kmeans.py '
+                var cmdStr1 = 'python ./services/py/split.py '+ fields.course;
+                var cmdStr2 = 'python ./services/py/word2vec_kmeans.py '+ fields.course;
                 exec(cmdStr,function (err,stdout,stderr) {
                     if(err) {
                         console.log('error: ' + stderr);
+                        return;
                     } else {
                         console.log(stdout);
                         exec(cmdStr1,function (err,stdout,stderr) {
@@ -35,9 +54,9 @@ exports.upLoad = (req, res,next) => {
                                 exec(cmdStr2,function (err,stdout,stderr) {
                                     if(err) {
                                         console.log('error: ' + stderr);
+                                        return;
                                     } else {
                                         console.log(stdout);
-
                                     }
                                 })
                             }
@@ -47,16 +66,7 @@ exports.upLoad = (req, res,next) => {
             }
         })
 
-        res.json({
-            status: 0
-        });
     })
-}
-function generateFilename(oldFilename){
-    //将老的文件名拼上时间戳，这样既不会命名冲突又可以看出文件的上传事件
-    let d = new Date();
-    let names = oldFilename.split(".");
-    return `${ names[0]}_${ ""+d.getFullYear() + (d.getMonth()+1) + d.getDate() +'_'+ d.getHours() + d.getMinutes() + d.getSeconds()}.${ names[1]}`;
 }
 
 exports.course_init = (req, res,next) => {
@@ -89,7 +99,8 @@ exports.paper_create = (req, res,next) => {
     console.log("paper_create");
     var course = req.body.course;
     var counts = req.body.counts;
-    var filename = "./services/py/cluster/out/tfidf_SC_out.txt";
+    //var filename = "./services/py/cluster/out/tfidf_SC_out.txt";
+    var filename = "./services/py/cluster/out/"+ course + "_out.txt";
     var fRead = fs.createReadStream(filename)
     var readObj = readLine.createInterface({input: fRead});
     //类别及对应索引
@@ -141,6 +152,7 @@ exports.paper_create = (req, res,next) => {
 
 exports.get_paper_list = (req, res,next) => {
     console.log("get_paper_list");
+    user_id = parseInt(req.body.user_id)
     db_helper.getpaperlist(user_id,function (res_list) {
         res.json({
             res_list: res_list,

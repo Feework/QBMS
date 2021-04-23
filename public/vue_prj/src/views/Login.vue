@@ -65,6 +65,14 @@ export default {
         });
         return;
       }
+      if (this.message.account.toString().length != 6) {
+        this.$message({
+          showClose: true,
+          message: "账号密码格式错误！",
+          type: "error"
+        });
+        return;
+      }
       this.axios
         .post(
           "index/login",
@@ -76,7 +84,12 @@ export default {
         .then(response => {
           let res = response.data;
           if (res.status === "0") {
-            this.$router.push({ path: "/Mainpage" });
+            console.log(parseInt(this.message.account))
+            this.$router.push({
+              path: "/Mainpage",
+            query:{
+                user_id: this.message.account
+            }});
           } else {
             if (res.status === "1") {
               this.$message({
