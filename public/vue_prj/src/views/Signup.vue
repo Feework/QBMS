@@ -79,6 +79,14 @@ export default {
       if (this.has_error) {
         return;
       }
+      if (this.users.name === "" || this.users.password === "") {
+        this.$message({
+          showClose: true,
+          message: "请输入用户名和密码！",
+          type: "error"
+        });
+        return;
+      }
       this.axios
         .post(
           "index/signup",

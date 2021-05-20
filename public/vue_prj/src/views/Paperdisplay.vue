@@ -289,6 +289,10 @@ export default {
       var point = this.dataSource.totalScore / this.dataSource.counts;
       var total = 0;
       for(var i = 0; i < this.dataSource.question.length ; i++){
+        console.log(this.dataSource.question[i].examineAnswer)
+        this.dataSource.question[i].examineAnswer.sort();
+        this.dataSource.question[i].correctAnswer.sort();
+        console.log(this.dataSource.question[i].examineAnswer)
           if(scalarArrayEquals(this.dataSource.question[i].examineAnswer,this.dataSource.question[i].correctAnswer)){
             //正确
             this.dataSource.question[i].isHook = 1;

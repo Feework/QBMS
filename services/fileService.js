@@ -39,7 +39,7 @@ function process(req){
                 console.log("重命名成功!");
                 var cmdStr = 'python ./services/py/extract.py '+newFilename+' '+ fields.course;
                 var cmdStr1 = 'python ./services/py/split.py '+ fields.course;
-                var cmdStr2 = 'python ./services/py/word2vec_kmeans.py '+ fields.course;
+                var cmdStr2 = 'python ./services/py/cluster.py '+ fields.course;
                 exec(cmdStr,function (err,stdout,stderr) {
                     if(err) {
                         console.log('error: ' + stderr);
